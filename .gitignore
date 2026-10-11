@@ -39,3 +39,7 @@ desktop.ini
 /tmp/
 /temp/
 *.cache
+.env
+dump.rdb
+*.rdb
+/vendor/
