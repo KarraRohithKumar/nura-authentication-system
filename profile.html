@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>User Profile - NURA AI LABS</title>
+  <meta name="description" content="NURA AI Labs user profile console powered by MongoDB and Redis authenticated sessions.">
+
+  <!-- Bootstrap 5 CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <!-- Custom Modern Stylesheet -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="d-flex flex-column min-vh-100">
+
+  <!-- Header Navigation -->
+  <header>
+    <nav class="navbar navbar-custom">
+      <div class="container">
+        <a class="navbar-brand brand-badge" href="index.html" id="navBrandLink">
+          <div class="brand-logo-icon">N</div>
+          <div>
+            <span>NURA AI LABS</span>
+            <div class="sub-text">Console</div>
+          </div>
+        </a>
+
+        <div class="d-flex align-items-center gap-2">
+          <button type="button" class="btn btn-secondary-custom px-3 py-2" data-bs-toggle="modal" data-bs-target="#editProfileModal" id="headerEditProfileBtn">
+            <i class="bi bi-pencil-square me-1"></i> Edit Profile
+          </button>
+          <button type="button" class="btn btn-danger-custom" id="logoutBtn">
+            <i class="bi bi-box-arrow-right me-1"></i> Sign Out
+          </button>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <!-- Main Content -->
+  <main class="flex-grow-1 py-5">
+    <div class="container">
+
+      <!-- Feedback Alert Container -->
+      <div id="alertContainer"></div>
+
+      <!-- Loading State Spinner -->
+      <div id="loadingState" class="text-center py-5">
+        <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
+          <span class="visually-hidden">Validating Redis session...</span>
+        </div>
+        <h5 class="text-white mt-3 fw-bold">Authenticating with Redis & Loading MongoDB Profile...</h5>
+        <p class="text-secondary small">Verifying cryptographic session tokens</p>
+      </div>
+
+      <!-- Profile Content (Initially hidden until verified) -->
+      <div id="profileContent" class="d-none">
+
+        <!-- Top Profile Banner Card -->
+        <div class="glass-card p-0 mb-4 overflow-hidden">
+          <div class="profile-avatar-banner">
+            <div class="profile-avatar-circle" id="avatarInitial">U</div>
+          </div>
+
+          <div class="profile-body">
+            <div class="d-flex flex-wrap align-items-end justify-content-between gap-3 mb-4">
+              <div class="ms-0 ms-md-4 mt-2">
+                <h1 class="h2 fw-bold text-white mb-1" id="displayName">Loading User...</h1>
+                <div class="d-flex flex-wrap align-items-center gap-2 text-secondary">
+                  <span id="displayRole" class="badge bg-primary bg-opacity-25 text-primary border border-primary border-opacity-50">Member</span>
+                  <span>•</span>
+                  <span id="displayOrg"><i class="bi bi-buildings me-1"></i>NURA AI Labs</span>
+                </div>
+              </div>
+
+              <div>
+                <button type="button" class="btn btn-primary-custom px-4 py-2" data-bs-toggle="modal" data-bs-target="#editProfileModal" id="bodyEditProfileBtn">
+                  <i class="bi bi-pencil me-1"></i> Update Profile Info
+                </button>
+              </div>
+            </div>
+
+            <!-- Architecture Source Breakdown Badges -->
+            <div class="d-flex flex-wrap gap-2 mb-4 pt-3 border-top border-secondary border-opacity-25">
+              <span class="badge bg-dark text-info border border-info border-opacity-25 py-2 px-3">
+                <i class="bi bi-database me-1"></i> Account: MySQL (users)
+              </span>
+              <span class="badge bg-dark text-success border border-success border-opacity-25 py-2 px-3">
+                <i class="bi bi-file-earmark-code me-1"></i> Profile Data: MongoDB (profiles)
+              </span>
+              <span class="badge bg-dark text-danger border border-danger border-opacity-25 py-2 px-3">
+                <i class="bi bi-lightning-charge me-1"></i> Active Session: Redis (In-Memory)
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div class="row g-4">
+          <!-- Left Column: Primary Account Details (MySQL) -->
+          <div class="col-lg-4">
+            <div class="glass-card h-100">
+              <div class="d-flex align-items-center justify-content-between mb-4">
+                <h5 class="fw-bold text-white mb-0">
+                  <i class="bi bi-shield-lock-fill text-info me-2"></i>MySQL Account
+                </h5>
+                <span class="tech-pill mysql">RDBMS</span>
+              </div>
+
+              <div class="d-flex flex-column gap-3">
+                <div class="info-tile">
+                  <div class="info-tile-label">Username</div>
+                  <div class="info-tile-val font-monospace text-primary-light" id="valUsername">—</div>
+                </div>
+
+                <div class="info-tile">
+                  <div class="info-tile-label">Registered Email</div>
+                  <div class="info-tile-val font-monospace" id="valEmail">—</div>
+                </div>
+
+                <div class="info-tile">
+                  <div class="info-tile-label">Database Record ID</div>
+                  <div class="info-tile-val font-monospace" id="valAccountId">—</div>
+                </div>
+
+                <div class="info-tile">
+                  <div class="info-tile-label">Account Created At</div>
+                  <div class="info-tile-val small text-secondary" id="valMemberSince">—</div>
+                </div>
+              </div>
+
+              <!-- Redis Session Metadata Box -->
+              <div class="mt-4 pt-4 border-top border-secondary border-opacity-25">
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                  <h6 class="fw-bold text-white mb-0 small">
+                    <i class="bi bi-lightning-charge-fill text-danger me-1"></i>Active Redis Session
+                  </h6>
+                  <span class="tech-pill redis">Cache</span>
+                </div>
+                <div class="p-3 rounded-3 bg-dark border border-secondary border-opacity-25 small font-monospace">
+                  <div class="text-secondary mb-1">Session Status: <span class="text-white" id="valSessionToken">Active (Redis)</span></div>
+                  <div class="text-secondary">Client IP: <span class="text-white" id="valClientIp">127.0.0.1</span></div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- Right Column: MongoDB Profile Details -->
+          <div class="col-lg-8">
+            <div class="glass-card h-100">
+              <div class="d-flex align-items-center justify-content-between mb-4">
+                <h5 class="fw-bold text-white mb-0">
+                  <i class="bi bi-person-lines-fill text-success me-2"></i>MongoDB Document Profile
+                </h5>
+                <span class="tech-pill mongo">NoSQL</span>
+              </div>
+
+              <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                  <div class="info-tile">
+                    <div class="info-tile-label">Full Name</div>
+                    <div class="info-tile-val" id="valFullName">—</div>
+                  </div>
+                </div>
+
+                <div class="col-md-6">
+                  <div class="info-tile">
+                    <div class="info-tile-label">Age</div>
+                    <div class="info-tile-val" id="valAge">—</div>
+                  </div>
+                </div>
+
+                <div class="col-md-6">
+                  <div class="info-tile">
+                    <div class="info-tile-label">Contact Phone</div>
+                    <div class="info-tile-val font-monospace" id="valPhone">—</div>
+                  </div>
+                </div>
+
+                <div class="col-md-6">
+                  <div class="info-tile">
+                    <div class="info-tile-label">Geographic Location</div>
+                    <div class="info-tile-val" id="valLocation">—</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Biography -->
+              <div class="info-tile mb-4">
+                <div class="info-tile-label">Research Bio & Summary</div>
+                <div class="info-tile-val fs-6 text-white-50" id="valBio" style="white-space: pre-line;">—</div>
+              </div>
+
+              <!-- Interests & Skills -->
+              <div class="info-tile">
+                <div class="info-tile-label mb-2">Research Focus & Technical Domains</div>
+                <div id="interestsContainer" class="d-flex flex-wrap gap-1">
+                  <!-- Injected via profile.js -->
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Edit Profile Modal -->
+  <div class="modal fade" id="editProfileModal" tabindex="-1" aria-labelledby="editProfileModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content glass-card border-0" style="background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(25px);">
+        <div class="modal-header border-bottom border-secondary border-opacity-25 pb-3">
+          <h5 class="modal-title text-white fw-bold" id="editProfileModalLabel">
+            <i class="bi bi-pencil-square text-primary me-2"></i>Update MongoDB Profile
+          </h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close" id="modalCloseBtn"></button>
+        </div>
+
+        <form id="editProfileForm" novalidate>
+          <div class="modal-body py-4">
+            <!-- Modal feedback alerts -->
+            <div id="modalAlertContainer"></div>
+
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label for="editName" class="form-label">Full Display Name</label>
+                <input type="text" class="form-control form-control-custom" id="editName" name="name" placeholder="e.g. Rohith Kumar" required>
+              </div>
+
+              <div class="col-md-6">
+                <label for="editAge" class="form-label">Age</label>
+                <input type="number" class="form-control form-control-custom" id="editAge" name="age" min="1" max="130" placeholder="e.g. 24">
+              </div>
+
+              <div class="col-md-6">
+                <label for="editPhone" class="form-label">Phone Number</label>
+                <input type="tel" class="form-control form-control-custom" id="editPhone" name="phone" placeholder="+91 9876543210">
+              </div>
+
+              <div class="col-md-6">
+                <label for="editLocation" class="form-label">Location / City</label>
+                <input type="text" class="form-control form-control-custom" id="editLocation" name="location" placeholder="e.g. Bengaluru, India">
+              </div>
+
+              <div class="col-md-6">
+                <label for="editOrganization" class="form-label">Organization / Lab</label>
+                <input type="text" class="form-control form-control-custom" id="editOrganization" name="organization" placeholder="e.g. NURA AI Research Labs">
+              </div>
+
+              <div class="col-md-6">
+                <label for="editRole" class="form-label">Role Title</label>
+                <input type="text" class="form-control form-control-custom" id="editRole" name="role" placeholder="e.g. AI Research Engineer">
+              </div>
+
+              <div class="col-12">
+                <label for="editInterests" class="form-label">Research Areas & Technical Interests (Comma-separated)</label>
+                <input type="text" class="form-control form-control-custom" id="editInterests" name="interests" placeholder="e.g. Deep Learning, Multi-Agent Systems, High Performance Redis, Distributed DBs">
+                <div class="form-text text-secondary small">Stored as an array of tags in MongoDB.</div>
+              </div>
+
+              <div class="col-12">
+                <label for="editBio" class="form-label">Biography & Summary</label>
+                <textarea class="form-control form-control-custom" id="editBio" name="bio" rows="4" placeholder="Briefly describe your research focus and background..."></textarea>
+              </div>
+            </div>
+          </div>
+
+          <div class="modal-footer border-top border-secondary border-opacity-25 pt-3">
+            <button type="button" class="btn btn-secondary-custom" data-bs-dismiss="modal" id="cancelEditBtn">Cancel</button>
+            <button type="submit" class="btn btn-primary-custom px-4" id="saveProfileBtn">
+              <span class="spinner-border spinner-border-sm d-none" id="saveSpinner" role="status" aria-hidden="true"></span>
+              <span id="saveBtnText"><i class="bi bi-cloud-arrow-up-fill me-1"></i> Save Changes</span>
+            </button>
+          </div>
+        </form>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="mt-auto py-3">
+    <div class="container text-center">
+      <p class="text-muted small mb-0">&copy; 2026 NURA AI Labs • Distributed Authentication Platform</p>
+    </div>
+  </footer>
+
+  <!-- Bootstrap 5 JS Bundle -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- jQuery 3.7.1 -->
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <!-- Profile Logic -->
+  <script src="js/profile.js"></script>
+</body>
+</html>

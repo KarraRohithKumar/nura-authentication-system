@@ -1,0 +1,16 @@
+{
+    "name": "nura/nura-authentication",
+    "description": "NURA AI LABS Production-Ready Authentication System",
+    "type": "project",
+    "authors": [
+        {
+            "name": "Rohith",
+            "email": "rohithkumar20056@gmail.com"
+        }
+    ],
+    "require": {
+        "predis/predis": "^3.6",
+        "vlucas/phpdotenv": "^5.7",
+        "mongodb/mongodb": "*"
+    }
+}
